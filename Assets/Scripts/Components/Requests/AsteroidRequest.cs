@@ -8,6 +8,5 @@ namespace Asteroids
         public float2 position;
         public float2 direction;
         public float speed;
-        public float timeleft;
     }
 }

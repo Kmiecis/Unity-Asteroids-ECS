@@ -69,7 +69,8 @@ namespace Asteroids
         private EntityArchetype GetAsteroidRequestArchetype()
         {
             return EntityManager.CreateArchetype(
-                typeof(AsteroidRequest)
+                typeof(AsteroidRequest),
+                typeof(RequestDelay)
             );
         }
 
@@ -104,12 +105,16 @@ namespace Asteroids
                         {
                             position = position,
                             direction = direction,
-                            speed = speed,
-                            timeleft = 1.0f
+                            speed = speed
+                        };
+                        var requestDelay = new RequestDelay
+                        {
+                            value = 1.0f
                         };
 
                         var requestEntity = commands.CreateEntity(entityInQueryIndex, requestArchetype);
                         commands.SetComponent(entityInQueryIndex, requestEntity, request);
+                        commands.SetComponent(entityInQueryIndex, requestEntity, requestDelay);
                     }
                 })
                 .ScheduleParallel();

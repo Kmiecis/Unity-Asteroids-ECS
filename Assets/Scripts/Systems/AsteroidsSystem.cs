@@ -111,10 +111,10 @@ namespace Asteroids
             var deltaTime = Time.DeltaTime;
             // Create asteroids from requests
             Entities
-                .ForEach((int entityInQueryIndex, Entity entity, ref AsteroidRequest request) =>
+                .ForEach((int entityInQueryIndex, Entity entity, ref RequestDelay delay, in AsteroidRequest request) =>
                 {
-                    request.timeleft -= deltaTime;
-                    if (request.timeleft > 0.0f)
+                    delay.value -= deltaTime;
+                    if (delay.value > 0.0f)
                         return;
 
                     commands.DestroyEntity(entityInQueryIndex, entity);

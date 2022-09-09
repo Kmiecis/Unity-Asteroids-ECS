@@ -45,7 +45,8 @@ namespace Asteroids
         private EntityArchetype GetAsteroidRequestArchetype()
         {
             return EntityManager.CreateArchetype(
-                typeof(AsteroidRequest)
+                typeof(AsteroidRequest),
+                typeof(RequestDelay)
             );
         }
 
