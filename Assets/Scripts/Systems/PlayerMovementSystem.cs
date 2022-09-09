@@ -22,7 +22,7 @@ namespace Asteroids
                         var currentDirection = direction.value;
                         var currentSpeed = speed.value;
 
-                        var playerDirection = transform.Up;
+                        var playerDirection = transform.Up.xy;
                         var playerSpeed = deltaTime * player.movementAcceleration;
 
                         var vector = currentSpeed * currentDirection + playerSpeed * playerDirection;

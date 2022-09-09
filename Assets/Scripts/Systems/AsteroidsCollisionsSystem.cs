@@ -39,8 +39,8 @@ namespace Asteroids
         {
             var result = _viewBoundsQuery.GetSingleton<ViewBounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value;
-            result.max += translation.Value;
+            result.min += translation.Value.xy;
+            result.max += translation.Value.xy;
             return result;
         }
 
@@ -61,8 +61,8 @@ namespace Asteroids
         {
             var result = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value;
-            result.max += translation.Value;
+            result.min += translation.Value.xy;
+            result.max += translation.Value.xy;
             return result;
         }
 

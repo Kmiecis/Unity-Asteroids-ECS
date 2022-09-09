@@ -6,6 +6,6 @@ namespace Asteroids
     [GenerateAuthoringComponent]
     public struct MovementDirection : IComponentData
     {
-        public float3 value;
+        public float2 value;
     }
 }

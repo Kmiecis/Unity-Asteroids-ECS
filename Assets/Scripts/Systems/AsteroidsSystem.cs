@@ -40,8 +40,8 @@ namespace Asteroids
         {
             var result = _viewBoundsQuery.GetSingleton<ViewBounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value;
-            result.max += translation.Value;
+            result.min += translation.Value.xy;
+            result.max += translation.Value.xy;
             return result;
         }
 
@@ -62,8 +62,8 @@ namespace Asteroids
         {
             var result = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value;
-            result.max += translation.Value;
+            result.min += translation.Value.xy;
+            result.max += translation.Value.xy;
             return result;
         }
 
@@ -123,21 +123,13 @@ namespace Asteroids
                     var rotation = new Rotation { Value = quaternion.identity };
                     var scale = new NonUniformScale { Value = new float3(asteroidData.radius * 2.0f) };
                     var collider = new Collider { radius = asteroidData.radius };
-                    var direction = new MovementDirection { value = new float3(request.direction, 0.0f) };
+                    var direction = new MovementDirection { value = request.direction };
                     var speed = new MovementSpeed { value = request.speed };
 
-                    var asteroid = Entity.Null;
-                    if (
-                        math.all(viewBounds.min <= translation.Value) &&
-                        math.all(translation.Value <= viewBounds.max)
-                    )
-                    {
-                        asteroid = commands.Instantiate(entityInQueryIndex, asteroidData.prefab);
-                    }
-                    else
-                    {
-                        asteroid = commands.CreateEntity(entityInQueryIndex, asteroidArchetype);
-                    }
+                    var asteroid = (math.all(viewBounds.min <= request.position) && math.all(request.position <= viewBounds.max)) ?
+                        commands.Instantiate(entityInQueryIndex, asteroidData.prefab) :
+                        commands.CreateEntity(entityInQueryIndex, asteroidArchetype);
+
                     commands.SetComponent(entityInQueryIndex, asteroid, translation);
                     commands.SetComponent(entityInQueryIndex, asteroid, rotation);
                     commands.SetComponent(entityInQueryIndex, asteroid, scale);
@@ -156,9 +148,10 @@ namespace Asteroids
                     in Collider collider, in MovementDirection direction, in MovementSpeed speed
                 ) =>
                 {
+                    var position = translation.Value.xy;
                     if (
-                        math.any(viewBounds.min > translation.Value) ||
-                        math.any(translation.Value > viewBounds.max)
+                        math.any(viewBounds.min > position) ||
+                        math.any(position > viewBounds.max)
                     )
                     {
                         commands.DestroyEntity(entityInQueryIndex, entity);
@@ -183,9 +176,10 @@ namespace Asteroids
                     in MovementDirection direction, in MovementSpeed speed
                 ) =>
                 {
+                    var position = translation.Value.xy;
                     if (
-                        math.all(viewBounds.min <= translation.Value) &&
-                        math.all(translation.Value <= viewBounds.max)
+                        math.all(viewBounds.min <= position) &&
+                        math.all(position <= viewBounds.max)
                     )
                     {
                         commands.DestroyEntity(entityInQueryIndex, entity);

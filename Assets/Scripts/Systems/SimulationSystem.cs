@@ -37,8 +37,8 @@ namespace Asteroids
         {
             var result = _boundsQuery.GetSingleton<SpaceBounds>();
             var translation = _boundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value;
-            result.max += translation.Value;
+            result.min += translation.Value.xy;
+            result.max += translation.Value.xy;
             return result;
         }
 
