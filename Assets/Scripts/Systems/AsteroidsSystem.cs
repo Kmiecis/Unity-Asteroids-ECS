@@ -8,7 +8,8 @@ namespace Asteroids
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
         private EntityQuery _viewBoundsQuery;
-        private EntityQuery _asteroidPrefabQuery;
+        private EntityQuery _spaceBoundsQuery;
+        private EntityQuery _asteroidDataQuery;
         private EntityArchetype _asteroidArchetype;
 
         protected override void OnCreate()
@@ -17,7 +18,8 @@ namespace Asteroids
 
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
             _viewBoundsQuery = GetViewBoundsQuery();
-            _asteroidPrefabQuery = GetAsteroidPrefabQuery();
+            _spaceBoundsQuery = GetSpaceBoundsQuery();
+            _asteroidDataQuery = GetAsteroidPrefabQuery();
             _asteroidArchetype = GetAsteroidArchetype();
         }
 
@@ -43,31 +45,54 @@ namespace Asteroids
             return result;
         }
 
+        private EntityQuery GetSpaceBoundsQuery()
+        {
+            var desc = new EntityQueryDesc()
+            {
+                All = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<SpaceBounds>(),
+                    ComponentType.ReadOnly<Translation>()
+                }
+            };
+            return GetEntityQuery(desc);
+        }
+
+        private SpaceBounds GetSpaceBounds()
+        {
+            var result = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
+            result.min += translation.Value;
+            result.max += translation.Value;
+            return result;
+        }
+
         private EntityQuery GetAsteroidPrefabQuery()
         {
             var desc = new EntityQueryDesc()
             {
                 All = new ComponentType[]
                 {
-                    ComponentType.ReadOnly<AsteroidPrefab>()
+                    ComponentType.ReadOnly<AsteroidData>()
                 }
             };
             return GetEntityQuery(desc);
         }
 
-        private Entity GetAsteroidPrefab()
+        private AsteroidData GetAsteroidData()
         {
-            var asteroidPrefab = _asteroidPrefabQuery.GetSingleton<AsteroidPrefab>();
-            return asteroidPrefab.value;
+            return _asteroidDataQuery.GetSingleton<AsteroidData>();
         }
 
         private EntityArchetype GetAsteroidArchetype()
         {
             return EntityManager.CreateArchetype(
+                typeof(Asteroid),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(NonUniformScale),
                 typeof(Collider),
+                typeof(Collided),
                 typeof(MovementDirection),
                 typeof(MovementSpeed),
                 typeof(ViewHidden)
@@ -79,25 +104,50 @@ namespace Asteroids
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
 
             var viewBounds = GetViewBounds();
-            var asteroidPrefab = GetAsteroidPrefab();
+            var spaceBounds = GetSpaceBounds();
+            var asteroidData = GetAsteroidData();
             var asteroidArchetype = _asteroidArchetype;
 
+            var deltaTime = Time.DeltaTime;
+            // Create asteroids from requests
             Entities
-                .ForEach((int entityInQueryIndex, Entity entity, in AsteroidRequest request) =>
+                .ForEach((int entityInQueryIndex, Entity entity, ref AsteroidRequest request) =>
                 {
+                    request.timeleft -= deltaTime;
+                    if (request.timeleft > 0.0f)
+                        return;
+
                     commands.DestroyEntity(entityInQueryIndex, entity);
 
-                    var translation = new Translation { Value = new float3(request.translation, 0.0f) };
+                    var translation = new Translation { Value = new float3(request.position, 0.0f) };
+                    var rotation = new Rotation { Value = quaternion.identity };
+                    var scale = new NonUniformScale { Value = new float3(asteroidData.radius * 2.0f) };
+                    var collider = new Collider { radius = asteroidData.radius };
                     var direction = new MovementDirection { value = new float3(request.direction, 0.0f) };
                     var speed = new MovementSpeed { value = request.speed };
 
-                    var asteroid = commands.Instantiate(entityInQueryIndex, asteroidPrefab);
+                    var asteroid = Entity.Null;
+                    if (
+                        math.all(viewBounds.min <= translation.Value) &&
+                        math.all(translation.Value <= viewBounds.max)
+                    )
+                    {
+                        asteroid = commands.Instantiate(entityInQueryIndex, asteroidData.prefab);
+                    }
+                    else
+                    {
+                        asteroid = commands.CreateEntity(entityInQueryIndex, asteroidArchetype);
+                    }
                     commands.SetComponent(entityInQueryIndex, asteroid, translation);
+                    commands.SetComponent(entityInQueryIndex, asteroid, rotation);
+                    commands.SetComponent(entityInQueryIndex, asteroid, scale);
+                    commands.SetComponent(entityInQueryIndex, asteroid, collider);
                     commands.SetComponent(entityInQueryIndex, asteroid, direction);
                     commands.SetComponent(entityInQueryIndex, asteroid, speed);
                 })
                 .ScheduleParallel();
 
+            // Hide asteroids as necessary
             Entities
                 .WithAll<ViewVisible>()
                 .ForEach((
@@ -124,6 +174,7 @@ namespace Asteroids
                 })
                 .ScheduleParallel();
 
+            // Show asteroids as necessary
             Entities
                 .WithAll<ViewHidden>()
                 .ForEach((
@@ -139,13 +190,34 @@ namespace Asteroids
                     {
                         commands.DestroyEntity(entityInQueryIndex, entity);
 
-                        var asteroid = commands.Instantiate(entityInQueryIndex, asteroidPrefab);
+                        var asteroid = commands.Instantiate(entityInQueryIndex, asteroidData.prefab);
                         commands.SetComponent(entityInQueryIndex, asteroid, translation);
                         commands.SetComponent(entityInQueryIndex, asteroid, rotation);
                         commands.SetComponent(entityInQueryIndex, asteroid, scale);
                         commands.SetComponent(entityInQueryIndex, asteroid, direction);
                         commands.SetComponent(entityInQueryIndex, asteroid, speed);
                     }
+                })
+                .ScheduleParallel();
+            
+            Entities
+                .WithAll<Asteroid>()
+                .ForEach((ref Translation translation) =>
+                {
+                    var position = translation.Value;
+                    var spaceBoundsSize = (spaceBounds.max - spaceBounds.min);
+
+                    while (position.x < spaceBounds.min.x)
+                        position.x += spaceBoundsSize.x;
+                    while (position.x > spaceBounds.max.x)
+                        position.x -= spaceBoundsSize.x;
+
+                    while (position.y < spaceBounds.min.y)
+                        position.y += spaceBoundsSize.y;
+                    while (position.y > spaceBounds.max.y)
+                        position.y -= spaceBoundsSize.y;
+
+                    translation.Value = position;
                 })
                 .ScheduleParallel();
 

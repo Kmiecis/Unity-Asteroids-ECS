@@ -3,8 +3,11 @@ using Unity.Entities;
 namespace Asteroids
 {
     [GenerateAuthoringComponent]
-    public struct AsteroidPrefab : IComponentData
+    public struct AsteroidData : IComponentData
     {
-        public Entity value;
+        public Entity prefab;
+        public float radius;
+        public float minSpeed;
+        public float maxSpeed;
     }
 }

@@ -2,13 +2,14 @@ using Unity.Entities;
 
 namespace Asteroids
 {
-    public partial class LifetimeSystem : SystemBase
+    public partial class DestroySystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
 
         protected override void OnCreate()
         {
             base.OnCreate();
+
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
         }
 
@@ -16,18 +17,11 @@ namespace Asteroids
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
 
-            var deltaTime = Time.DeltaTime;
-
             Entities
-                .ForEach((int entityInQueryIndex, Entity entity, ref Lifetime lifetime) =>
+                .WithAll<Destroy>()
+                .ForEach((int entityInQueryIndex, Entity entity) =>
                 {
-                    var lifetimeValue = lifetime.value;
-                    lifetime.value -= deltaTime;
-
-                    if (lifetime.value <= 0.0f && lifetimeValue > 0.0f)
-                    {
-                        commands.AddComponent(entityInQueryIndex, entity, new Destroy());
-                    }
+                    commands.DestroyEntity(entityInQueryIndex, entity);
                 })
                 .ScheduleParallel();
 

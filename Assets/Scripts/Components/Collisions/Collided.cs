@@ -3,8 +3,8 @@ using Unity.Entities;
 namespace Asteroids
 {
     [GenerateAuthoringComponent]
-    public struct Collider : IComponentData
+    public struct Collided : IComponentData
     {
-        public float radius;
+        public bool value;
     }
 }

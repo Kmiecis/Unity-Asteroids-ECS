@@ -33,13 +33,6 @@ namespace Asteroids
             return GetEntityQuery(desc);
         }
 
-        private EntityArchetype GetAsteroidRequestArchetype()
-        {
-            return EntityManager.CreateArchetype(
-                typeof(AsteroidRequest)
-            );
-        }
-
         private SpaceBounds GetSpaceBounds()
         {
             var result = _boundsQuery.GetSingleton<SpaceBounds>();
@@ -47,6 +40,13 @@ namespace Asteroids
             result.min += translation.Value;
             result.max += translation.Value;
             return result;
+        }
+
+        private EntityArchetype GetAsteroidRequestArchetype()
+        {
+            return EntityManager.CreateArchetype(
+                typeof(AsteroidRequest)
+            );
         }
 
         protected override void OnUpdate()
@@ -70,7 +70,7 @@ namespace Asteroids
 
                             var asteroidRequest = new AsteroidRequest
                             {
-                                translation = translation,
+                                position = translation,
                                 direction = direction,
                                 speed = speed
                             };
