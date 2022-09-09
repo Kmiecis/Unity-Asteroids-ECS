@@ -12,7 +12,7 @@ namespace Asteroids
         {
             var world = World.DefaultGameObjectInjectionWorld;
             var entityManager = world.EntityManager;
-            var settings = new GameObjectConversionSettings(world, GameObjectConversionUtility.ConversionFlags.AddEntityGUID);
+            var settings = new GameObjectConversionSettings(world, GameObjectConversionUtility.ConversionFlags.AssignName);
             var entityPrefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, settings);
             entity = entityManager.Instantiate(entityPrefab);
         }

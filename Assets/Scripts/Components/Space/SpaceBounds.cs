@@ -6,7 +6,7 @@ namespace Asteroids
     [GenerateAuthoringComponent]
     public struct SpaceBounds : IComponentData
     {
-        public int3 min;
-        public int3 max;
+        public float3 min;
+        public float3 max;
     }
 }

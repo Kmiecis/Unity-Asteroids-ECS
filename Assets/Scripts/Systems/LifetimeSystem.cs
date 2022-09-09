@@ -26,7 +26,7 @@ namespace Asteroids
 
                     if (lifetime.value <= 0.0f && lifetimeValue > 0.0f)
                     {
-                        commands.AddComponent(entityInQueryIndex, entity, new DestroyTag());
+                        commands.DestroyEntity(entityInQueryIndex, entity);
                     }
                 })
                 .ScheduleParallel();

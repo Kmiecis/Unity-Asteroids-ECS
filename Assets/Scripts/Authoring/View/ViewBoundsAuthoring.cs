@@ -20,7 +20,7 @@ namespace Asteroids
         {
             var position = (float3)transform.position;
             var center = (min + max) * 0.5f + position;
-            var size = (max - min);
+            var size = max - min;
 
             Gizmos.color = Color.black;
             Gizmos.DrawWireCube(center, size);
