@@ -14,7 +14,7 @@ namespace Asteroids
                 .ForEach((ref Rotation rotation, in RotateSpeed speed, in LocalToWorld transform) =>
                 {
                     var axis = transform.Forward;
-                    var angle = math.radians(speed.value);
+                    var angle = math.radians(deltaTime * speed.value);
                     rotation.Value = math.mul(rotation.Value, quaternion.AxisAngle(axis, angle));
                 })
                 .ScheduleParallel();

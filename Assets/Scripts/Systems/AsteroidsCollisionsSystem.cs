@@ -24,46 +24,32 @@ namespace Asteroids
 
         private EntityQuery GetViewBoundsQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<ViewBounds>(),
-                    ComponentType.ReadOnly<Translation>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<ViewBounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
         }
 
         private ViewBounds GetViewBounds()
         {
-            var result = _viewBoundsQuery.GetSingleton<ViewBounds>();
+            var viewBounds = _viewBoundsQuery.GetSingleton<ViewBounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value.xy;
-            result.max += translation.Value.xy;
-            return result;
+            return viewBounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetSpaceBoundsQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<SpaceBounds>(),
-                    ComponentType.ReadOnly<Translation>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<SpaceBounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
         }
 
         private SpaceBounds GetSpaceBounds()
         {
-            var result = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value.xy;
-            result.max += translation.Value.xy;
-            return result;
+            return spaceBounds.Translated(translation.Value.xy);
         }
 
         private EntityArchetype GetAsteroidRequestArchetype()
@@ -92,12 +78,9 @@ namespace Asteroids
                         var seed = math.max(math.hash(translation.Value), 1);
                         var random = new Random(seed);
 
-                        var position = random.NextFloat2(spaceBounds.min.xy, spaceBounds.max.xy);
-                        while (math.all(viewBounds.min.xy <= position) && math.all(position <= viewBounds.max.xy))
-                        {
-                            position = random.NextFloat2(spaceBounds.min.xy, spaceBounds.max.xy);
-                        }
-
+                        var position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
+                        while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
+                            position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
                         var direction = random.NextFloat2Direction();
                         var speed = random.NextFloat(0.0f, 1.0f);
 

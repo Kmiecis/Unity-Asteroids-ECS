@@ -9,8 +9,6 @@ namespace Asteroids
     {
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
-
             var turnLeft = Input.GetKey(KeyCode.A);
             var turnRight = Input.GetKey(KeyCode.D);
 
@@ -23,12 +21,12 @@ namespace Asteroids
 
                     if (turnLeft)
                     {
-                        speed.value = math.min(speed.value + deltaTime * turnAcceleration, turnSpeedLimit);
+                        speed.value = math.min(speed.value + turnAcceleration, turnSpeedLimit);
                     }
 
                     if (turnRight)
                     {
-                        speed.value = math.max(speed.value - deltaTime * turnAcceleration, -turnSpeedLimit);
+                        speed.value = math.max(speed.value - turnAcceleration, -turnSpeedLimit);
                     }
 
                     if (
@@ -38,11 +36,11 @@ namespace Asteroids
                     {
                         if (speed.value < 0.0f)
                         {
-                            speed.value = math.min(speed.value - deltaTime * turnDeacceleration, 0.0f);
+                            speed.value = math.min(speed.value - turnDeacceleration, 0.0f);
                         }
                         else if (speed.value > 0.0f)
                         {
-                            speed.value = math.max(speed.value + deltaTime * turnDeacceleration, 0.0f);
+                            speed.value = math.max(speed.value + turnDeacceleration, 0.0f);
                         }
                     }
                 })

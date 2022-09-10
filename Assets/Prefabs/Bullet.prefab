@@ -129,7 +129,6 @@ MonoBehaviour:
   value:
     x: 0
     y: 0
-    z: 0
 --- !u!114 &-2006028361466520192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,7 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 926f8caccf453bb4984ca49990b5cefe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  value: 5
+  value: 20
 --- !u!114 &-7606447860020948516
 MonoBehaviour:
   m_ObjectHideFlags: 0

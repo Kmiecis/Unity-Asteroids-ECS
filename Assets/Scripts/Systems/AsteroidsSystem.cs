@@ -25,58 +25,39 @@ namespace Asteroids
 
         private EntityQuery GetViewBoundsQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<ViewBounds>(),
-                    ComponentType.ReadOnly<Translation>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<ViewBounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
         }
 
         private ViewBounds GetViewBounds()
         {
-            var result = _viewBoundsQuery.GetSingleton<ViewBounds>();
+            var viewBounds = _viewBoundsQuery.GetSingleton<ViewBounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value.xy;
-            result.max += translation.Value.xy;
-            return result;
+            return viewBounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetSpaceBoundsQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<SpaceBounds>(),
-                    ComponentType.ReadOnly<Translation>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<SpaceBounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
         }
 
         private SpaceBounds GetSpaceBounds()
         {
-            var result = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value.xy;
-            result.max += translation.Value.xy;
-            return result;
+            return spaceBounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetAsteroidPrefabQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<AsteroidData>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<AsteroidData>()
+            );
         }
 
         private AsteroidData GetAsteroidData()

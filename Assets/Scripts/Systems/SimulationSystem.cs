@@ -22,24 +22,17 @@ namespace Asteroids
 
         private EntityQuery GetSpaceBoundsQuery()
         {
-            var desc = new EntityQueryDesc()
-            {
-                All = new ComponentType[]
-                {
-                    ComponentType.ReadOnly<SpaceBounds>(),
-                    ComponentType.ReadOnly<Translation>()
-                }
-            };
-            return GetEntityQuery(desc);
+            return GetEntityQuery(
+                ComponentType.ReadOnly<SpaceBounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
         }
 
         private SpaceBounds GetSpaceBounds()
         {
-            var result = _boundsQuery.GetSingleton<SpaceBounds>();
+            var spaceBounds = _boundsQuery.GetSingleton<SpaceBounds>();
             var translation = _boundsQuery.GetSingleton<Translation>();
-            result.min += translation.Value.xy;
-            result.max += translation.Value.xy;
-            return result;
+            return spaceBounds.Translated(translation.Value.xy);
         }
 
         private EntityArchetype GetAsteroidRequestArchetype()

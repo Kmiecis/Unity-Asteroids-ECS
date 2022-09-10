@@ -10,8 +10,6 @@ namespace Asteroids
     {
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
-
             var accelerate = Input.GetKey(KeyCode.W);
 
             Entities
@@ -23,7 +21,7 @@ namespace Asteroids
                         var currentSpeed = speed.value;
 
                         var playerDirection = transform.Up.xy;
-                        var playerSpeed = deltaTime * player.movementAcceleration;
+                        var playerSpeed = player.movementAcceleration;
 
                         var vector = currentSpeed * currentDirection + playerSpeed * playerDirection;
                         var length = math.length(vector);
@@ -35,7 +33,7 @@ namespace Asteroids
                     }
                     else if (speed.value > 0.0f)
                     {
-                        speed.value = math.max(speed.value + deltaTime * player.movementDeacceleration, 0.0f);
+                        speed.value = math.max(speed.value + player.movementDeacceleration, 0.0f);
                     }
                 })
                 .ScheduleParallel();
