@@ -8,17 +8,9 @@ namespace Asteroids
     public partial class SimulationSystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
-        private EntityQuery _boundsQuery;
+        private EntityQuery _spaceBoundsQuery;
+        private EntityQuery _asteroidDataQuery;
         private EntityArchetype _requestArchetype;
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
-            _boundsQuery = GetSpaceBoundsQuery();
-            _requestArchetype = GetAsteroidRequestArchetype();
-        }
 
         private EntityQuery GetSpaceBoundsQuery()
         {
@@ -30,9 +22,21 @@ namespace Asteroids
 
         private SpaceBounds GetSpaceBounds()
         {
-            var spaceBounds = _boundsQuery.GetSingleton<SpaceBounds>();
-            var translation = _boundsQuery.GetSingleton<Translation>();
+            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
             return spaceBounds.Translated(translation.Value.xy);
+        }
+
+        private EntityQuery GetAsteroidDataQuery()
+        {
+            return GetEntityQuery(
+                ComponentType.ReadOnly<AsteroidData>()
+            );
+        }
+
+        private AsteroidData GetAsteroidData()
+        {
+            return _asteroidDataQuery.GetSingleton<AsteroidData>();
         }
 
         private EntityArchetype GetAsteroidRequestArchetype()
@@ -43,10 +47,21 @@ namespace Asteroids
             );
         }
 
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _spaceBoundsQuery = GetSpaceBoundsQuery();
+            _asteroidDataQuery = GetAsteroidDataQuery();
+            _requestArchetype = GetAsteroidRequestArchetype();
+        }
+
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
-            var bounds = GetSpaceBounds();
+            var spaceBounds = GetSpaceBounds();
+            var asteroidData = GetAsteroidData();
             var requestArchetype = _requestArchetype;
 
             Entities
@@ -54,17 +69,17 @@ namespace Asteroids
                 {
                     var random = new Random(request.seed);
 
-                    for (float y = bounds.min.y; y <= bounds.max.y; y += 1.0f)
+                    for (float y = spaceBounds.min.y; y <= spaceBounds.max.y; y += 1.0f)
                     {
-                        for (float x = bounds.min.x; x <= bounds.max.x; x += 1.0f)
+                        for (float x = spaceBounds.min.x; x <= spaceBounds.max.x; x += 1.0f)
                         {
-                            var translation = new float2(x, y);
+                            var position = new float2(x, y);
                             var direction = random.NextFloat2Direction();
-                            var speed = random.NextFloat(0.0f, 1.0f);
+                            var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 
                             var asteroidRequest = new AsteroidRequest
                             {
-                                position = translation,
+                                position = position,
                                 direction = direction,
                                 speed = speed
                             };

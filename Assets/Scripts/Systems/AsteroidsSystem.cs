@@ -12,17 +12,6 @@ namespace Asteroids
         private EntityQuery _asteroidDataQuery;
         private EntityArchetype _asteroidArchetype;
 
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
-            _viewBoundsQuery = GetViewBoundsQuery();
-            _spaceBoundsQuery = GetSpaceBoundsQuery();
-            _asteroidDataQuery = GetAsteroidPrefabQuery();
-            _asteroidArchetype = GetAsteroidArchetype();
-        }
-
         private EntityQuery GetViewBoundsQuery()
         {
             return GetEntityQuery(
@@ -78,6 +67,17 @@ namespace Asteroids
                 typeof(MovementSpeed),
                 typeof(ViewHidden)
             );
+        }
+
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _viewBoundsQuery = GetViewBoundsQuery();
+            _spaceBoundsQuery = GetSpaceBoundsQuery();
+            _asteroidDataQuery = GetAsteroidPrefabQuery();
+            _asteroidArchetype = GetAsteroidArchetype();
         }
 
         protected override void OnUpdate()

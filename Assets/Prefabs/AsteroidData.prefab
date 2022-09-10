@@ -58,8 +58,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d61405e04ce55bc47ab22067359ca44c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  value: {fileID: 2821576399426694136, guid: 993d9371710919248936771f9d33e6a9, type: 3}
   prefab: {fileID: 2821576399426694136, guid: 993d9371710919248936771f9d33e6a9, type: 3}
   radius: 0.2
-  minSpeed: 0
-  maxSpeed: 1
+  minSpeed: 0.5
+  maxSpeed: 1.5

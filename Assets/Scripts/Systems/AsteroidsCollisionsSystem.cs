@@ -10,17 +10,8 @@ namespace Asteroids
         private BeginInitializationEntityCommandBufferSystem _commands;
         private EntityQuery _viewBoundsQuery;
         private EntityQuery _spaceBoundsQuery;
+        private EntityQuery _asteroidDataQuery;
         private EntityArchetype _requestArchetype;
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
-            _viewBoundsQuery = GetViewBoundsQuery();
-            _spaceBoundsQuery = GetSpaceBoundsQuery();
-            _requestArchetype = GetAsteroidRequestArchetype();
-        }
 
         private EntityQuery GetViewBoundsQuery()
         {
@@ -52,6 +43,18 @@ namespace Asteroids
             return spaceBounds.Translated(translation.Value.xy);
         }
 
+        private EntityQuery GetAsteroidDataQuery()
+        {
+            return GetEntityQuery(
+                ComponentType.ReadOnly<AsteroidData>()
+            );
+        }
+
+        private AsteroidData GetAsteroidData()
+        {
+            return _asteroidDataQuery.GetSingleton<AsteroidData>();
+        }
+
         private EntityArchetype GetAsteroidRequestArchetype()
         {
             return EntityManager.CreateArchetype(
@@ -60,11 +63,23 @@ namespace Asteroids
             );
         }
 
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _viewBoundsQuery = GetViewBoundsQuery();
+            _spaceBoundsQuery = GetSpaceBoundsQuery();
+            _asteroidDataQuery = GetAsteroidDataQuery();
+            _requestArchetype = GetAsteroidRequestArchetype();
+        }
+
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
             var viewBounds = GetViewBounds();
             var spaceBounds = GetSpaceBounds();
+            var asteroidData = GetAsteroidData();
             var requestArchetype = _requestArchetype;
 
             Entities
@@ -82,7 +97,7 @@ namespace Asteroids
                         while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
                             position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
                         var direction = random.NextFloat2Direction();
-                        var speed = random.NextFloat(0.0f, 1.0f);
+                        var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 
                         var request = new AsteroidRequest
                         {
