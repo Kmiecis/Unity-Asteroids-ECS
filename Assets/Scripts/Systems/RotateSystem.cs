@@ -6,6 +6,8 @@ namespace Asteroids
 {
     public partial class RotateSystem : SystemBase
     {
+        private static readonly float3 kRotationAxis = new float3(0.0f, 0.0f, 1.0f);
+
         protected override void OnUpdate()
         {
             var deltaTime = Time.DeltaTime;
@@ -13,9 +15,8 @@ namespace Asteroids
             Entities
                 .ForEach((ref Rotation rotation, in RotateSpeed speed, in LocalToWorld transform) =>
                 {
-                    var axis = transform.Forward;
-                    var angle = math.radians(deltaTime * speed.value);
-                    rotation.Value = math.mul(rotation.Value, quaternion.AxisAngle(axis, angle));
+                    var angle = deltaTime * math.radians(speed.value);
+                    rotation.Value = math.mul(rotation.Value, quaternion.AxisAngle(kRotationAxis, angle));
                 })
                 .ScheduleParallel();
         }

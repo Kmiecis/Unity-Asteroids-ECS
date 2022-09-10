@@ -9,15 +9,17 @@ namespace Asteroids
     {
         protected override void OnUpdate()
         {
+            var deltaTime = Time.DeltaTime;
+
             var turnLeft = Input.GetKey(KeyCode.A);
             var turnRight = Input.GetKey(KeyCode.D);
 
             Entities
                 .ForEach((ref RotateSpeed speed, in Player player) =>
                 {
-                    var turnAcceleration = math.radians(player.turnAcceleration);
-                    var turnDeacceleration = math.radians(player.turnDeacceleration);
-                    var turnSpeedLimit = math.radians(player.turnSpeedLimit);
+                    var turnAcceleration = deltaTime * player.turnAcceleration;
+                    var turnDeacceleration = deltaTime * player.turnDeacceleration;
+                    var turnSpeedLimit = player.turnSpeedLimit;
 
                     if (turnLeft)
                     {
@@ -30,8 +32,8 @@ namespace Asteroids
                     }
 
                     if (
-                        !turnLeft && !turnRight ||
-                        turnLeft && turnRight
+                        (!turnLeft && !turnRight) ||
+                        (turnLeft && turnRight)
                     )
                     {
                         if (speed.value < 0.0f)

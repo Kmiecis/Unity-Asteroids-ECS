@@ -116,12 +116,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fe552d21b1a264f8fa4ea6dca90751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementAcceleration: 1
-  movementDeacceleration: -1
-  movementSpeedLimit: 2
-  turnAcceleration: 60
-  turnDeacceleration: -30
-  turnSpeedLimit: 90
+  movementAcceleration: 8
+  movementDeacceleration: -2
+  movementSpeedLimit: 4
+  turnAcceleration: 900
+  turnDeacceleration: -450
+  turnSpeedLimit: 180
 --- !u!114 &-2308362249625175621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,7 +137,6 @@ MonoBehaviour:
   value:
     x: 0
     y: 1
-    z: 0
 --- !u!114 &-3719278903901314903
 MonoBehaviour:
   m_ObjectHideFlags: 0
