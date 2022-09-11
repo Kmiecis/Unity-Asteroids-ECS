@@ -6,15 +6,44 @@ namespace Asteroids
     public class EntityInstance : MonoBehaviour
     {
         public GameObject prefab;
-        public Entity entity;
+
+        protected World _world;
+        protected EntityManager _entityManager;
+        protected Entity _entity;
+
+        public bool TryGetEntity(out Entity entity)
+        {
+            entity = _entity;
+            return (
+                entity != Entity.Null &&
+                _entityManager.Exists(entity)
+            );
+        }
+
+        public bool TryGetData<T>(out T data)
+            where T : struct, IComponentData
+        {
+            if (TryGetEntity(out var entity) && _entityManager.HasComponent<T>(entity))
+            {
+                data = _entityManager.GetComponentData<T>(entity);
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
 
         private void Awake()
         {
-            var world = World.DefaultGameObjectInjectionWorld;
-            var entityManager = world.EntityManager;
-            var settings = new GameObjectConversionSettings(world, GameObjectConversionUtility.ConversionFlags.AssignName);
+            _world = World.DefaultGameObjectInjectionWorld;
+            _entityManager = _world.EntityManager;
+        }
+
+        private void Start()
+        {
+            var settings = new GameObjectConversionSettings(_world, GameObjectConversionUtility.ConversionFlags.AssignName);
             var entityPrefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, settings);
-            entity = entityManager.Instantiate(entityPrefab);
+            _entity = _entityManager.Instantiate(entityPrefab);
         }
     }
 }

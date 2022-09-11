@@ -19,9 +19,12 @@ namespace Asteroids
 
         private void LateUpdate()
         {
-            var translation = _manager.GetComponentData<Translation>(entityInstance.entity);
-            translation.Value = (float3)transform.position + offset;
-            _manager.SetComponentData(entityInstance.entity, translation);
+            if (entityInstance.TryGetEntity(out var entity))
+            {
+                var translation = _manager.GetComponentData<Translation>(entity);
+                translation.Value = (float3)transform.position + offset;
+                _manager.SetComponentData(entity, translation);
+            }
         }
     }
 }

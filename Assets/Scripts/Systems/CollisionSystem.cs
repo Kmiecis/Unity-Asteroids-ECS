@@ -118,7 +118,7 @@ namespace Asteroids
                 .WithReadOnly(quadrantMap)
                 .ForEach((int entityInQueryIndex, Entity entity, ref Collided collided, in Translation translation, in Collider collider) =>
                 {
-                    var position = translation.Value.xy;
+                    var position = translation.Value.xy + collider.offset;
                     var quadrantKey = GetQuadrantKey(position, (int)spaceSize.y);
 
                     if (quadrantMap.TryGetFirstValue(quadrantKey, out var data, out var iterator))
@@ -132,7 +132,7 @@ namespace Asteroids
                             if (entity == otherEntity)
                                 continue;
 
-                            var otherPosition = otherTranslation.Value.xy;
+                            var otherPosition = otherTranslation.Value.xy + otherCollider.offset;
 
                             var dt = otherPosition - position;
                             var sr = otherCollider.radius + collider.radius;

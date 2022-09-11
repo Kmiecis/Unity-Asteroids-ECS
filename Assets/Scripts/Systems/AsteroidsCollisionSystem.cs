@@ -5,7 +5,7 @@ using Unity.Transforms;
 namespace Asteroids
 {
     [UpdateAfter(typeof(CollisionSystem))]
-    public partial class AsteroidsCollisionsSystem : SystemBase
+    public partial class AsteroidsCollisionSystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
         private EntityQuery _viewBoundsQuery;

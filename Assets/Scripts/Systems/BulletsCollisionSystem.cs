@@ -1,9 +1,10 @@
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Asteroids
 {
     [UpdateAfter(typeof(CollisionSystem))]
-    public partial class BulletsCollisionsSystem : SystemBase
+    public partial class BulletsCollisionSystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
 
@@ -14,10 +15,11 @@ namespace Asteroids
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
         }
 
-        // Increase score on collision before being destroyed
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
+            var collisionsQueue = new NativeQueue<int>(Allocator.TempJob);
+            var collisionsQueueWriter = collisionsQueue.AsParallelWriter();
 
             Entities
                 .WithAll<Bullet>()
@@ -26,8 +28,19 @@ namespace Asteroids
                     if (collided.value)
                     {
                         commands.DestroyEntity(entityInQueryIndex, entity);
+
+                        collisionsQueueWriter.Enqueue(1);
                     }
                 })
+                .ScheduleParallel();
+
+            Entities
+                .WithReadOnly(collisionsQueue)
+                .ForEach((ref PlayerScore playerScore) =>
+                {
+                    playerScore.value += collisionsQueue.Count;
+                })
+                .WithDisposeOnCompletion(collisionsQueue)
                 .ScheduleParallel();
 
             _commands.AddJobHandleForProducer(this.Dependency);

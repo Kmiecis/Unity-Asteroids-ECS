@@ -2,7 +2,8 @@ using Unity.Entities;
 
 namespace Asteroids
 {
-    public partial class DestroySystem : SystemBase
+    [UpdateAfter(typeof(CollisionSystem))]
+    public partial class PlayerCollisionSystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
 
@@ -18,10 +19,13 @@ namespace Asteroids
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
 
             Entities
-                .WithAll<Destroy>()
-                .ForEach((int entityInQueryIndex, Entity entity) =>
+                .WithAll<Player>()
+                .ForEach((int entityInQueryIndex, Entity entity, in Collided collided) =>
                 {
-                    commands.DestroyEntity(entityInQueryIndex, entity);
+                    if (collided.value)
+                    {
+                        commands.DestroyEntity(entityInQueryIndex, entity);
+                    }
                 })
                 .ScheduleParallel();
 
