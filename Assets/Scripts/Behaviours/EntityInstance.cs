@@ -33,6 +33,27 @@ namespace Asteroids
             return false;
         }
 
+        public bool TrySetData<T>(T data)
+            where T : struct, IComponentData
+        {
+            if (TryGetEntity(out var entity) && _entityManager.HasComponent<T>(entity))
+            {
+                _entityManager.SetComponentData(entity, data);
+                return true;
+            }
+            return false;
+        }
+
+        public bool TryAddData<T>(T data)
+            where T : struct, IComponentData
+        {
+            if (TryGetEntity(out var entity))
+            {
+                return _entityManager.AddComponentData(entity, data);
+            }
+            return false;
+        }
+
         private void Awake()
         {
             _world = World.DefaultGameObjectInjectionWorld;

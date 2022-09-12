@@ -7,6 +7,6 @@ namespace Asteroids
     public struct FiringSpawner : IComponentData
     {
         public Entity prefab;
-        public float3 offset;
+        public float2 offset;
     }
 }

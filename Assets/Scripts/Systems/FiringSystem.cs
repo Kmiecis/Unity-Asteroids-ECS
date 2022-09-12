@@ -28,7 +28,7 @@ namespace Asteroids
                     {
                         var projectile = commands.Instantiate(entityInQueryIndex, spawner.prefab);
 
-                        var projectileTranslation = new Translation { Value = math.transform(transform.Value, spawner.offset) };
+                        var projectileTranslation = new Translation { Value = math.transform(transform.Value, new float3(spawner.offset, 0.0f)) };
                         var projectileDirection = new MovementDirection { value = transform.Up.xy };
 
                         commands.SetComponent(entityInQueryIndex, projectile, projectileTranslation);

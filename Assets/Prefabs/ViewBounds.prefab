@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2889763171333403383}
   - component: {fileID: 6570919704338273825}
-  - component: {fileID: 2889763171333403382}
+  - component: {fileID: 615091501787202339}
+  - component: {fileID: 8278076215335685376}
   m_Layer: 0
   m_Name: ViewBounds
   m_TagString: Untagged
@@ -46,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ConversionMode: 0
---- !u!114 &2889763171333403382
+--- !u!114 &615091501787202339
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -55,12 +56,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 2889763171333403380}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbe7713e33a347f41a475df05ce8ad36, type: 3}
+  m_Script: {fileID: 11500000, guid: b512e50e6410fd14097fe7ce260bd62d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8278076215335685376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2889763171333403380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a3974605ce75e94bb0733bc9eb92310, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   min:
-    x: -8
-    y: -5
+    x: -9
+    y: -5.5
   max:
-    x: 8
-    y: 5
+    x: 9
+    y: 5.5

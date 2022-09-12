@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7310373826279728700}
   - component: {fileID: -405401858022620109}
   - component: {fileID: 7310373826279728703}
+  - component: {fileID: 846113421855570023}
   m_Layer: 0
   m_Name: SpaceBounds
   m_TagString: Untagged
@@ -58,11 +59,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bad4d33421f6aad48830cdcec45d8d3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &846113421855570023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7310373826279728702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a3974605ce75e94bb0733bc9eb92310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   min:
     x: -79.5
     y: -79.5
-    z: 0
   max:
     x: 80.5
     y: 80.5
-    z: 0

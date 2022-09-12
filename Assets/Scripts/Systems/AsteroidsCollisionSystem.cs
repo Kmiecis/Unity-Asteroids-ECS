@@ -17,30 +17,32 @@ namespace Asteroids
         {
             return GetEntityQuery(
                 ComponentType.ReadOnly<ViewBounds>(),
+                ComponentType.ReadOnly<Bounds>(),
                 ComponentType.ReadOnly<Translation>()
             );
         }
 
-        private ViewBounds GetViewBounds()
+        private Bounds GetViewBounds()
         {
-            var viewBounds = _viewBoundsQuery.GetSingleton<ViewBounds>();
+            var bounds = _viewBoundsQuery.GetSingleton<Bounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            return viewBounds.Translated(translation.Value.xy);
+            return bounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetSpaceBoundsQuery()
         {
             return GetEntityQuery(
                 ComponentType.ReadOnly<SpaceBounds>(),
+                ComponentType.ReadOnly<Bounds>(),
                 ComponentType.ReadOnly<Translation>()
             );
         }
 
-        private SpaceBounds GetSpaceBounds()
+        private Bounds GetSpaceBounds()
         {
-            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var bounds = _spaceBoundsQuery.GetSingleton<Bounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return spaceBounds.Translated(translation.Value.xy);
+            return bounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetAsteroidDataQuery()
@@ -94,8 +96,9 @@ namespace Asteroids
                         var random = new Random(seed);
 
                         var position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
-                        while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
-                            position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
+                        if (math.all(spaceBounds.min < viewBounds.min) && math.all(viewBounds.max < spaceBounds.max))
+                            while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
+                                position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
                         var direction = random.NextFloat2Direction();
                         var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 

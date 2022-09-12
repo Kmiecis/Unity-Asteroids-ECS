@@ -16,15 +16,16 @@ namespace Asteroids
         {
             return GetEntityQuery(
                 ComponentType.ReadOnly<SpaceBounds>(),
+                ComponentType.ReadOnly<Bounds>(),
                 ComponentType.ReadOnly<Translation>()
             );
         }
 
-        private SpaceBounds GetSpaceBounds()
+        private Bounds GetSpaceBounds()
         {
-            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
+            var bounds = _spaceBoundsQuery.GetSingleton<Bounds>();
             var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return spaceBounds.Translated(translation.Value.xy);
+            return bounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetAsteroidDataQuery()

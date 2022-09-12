@@ -8,7 +8,6 @@ namespace Asteroids
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
         private EntityQuery _viewBoundsQuery;
-        private EntityQuery _spaceBoundsQuery;
         private EntityQuery _asteroidDataQuery;
         private EntityArchetype _asteroidArchetype;
 
@@ -16,30 +15,16 @@ namespace Asteroids
         {
             return GetEntityQuery(
                 ComponentType.ReadOnly<ViewBounds>(),
+                ComponentType.ReadOnly<Bounds>(),
                 ComponentType.ReadOnly<Translation>()
             );
         }
 
-        private ViewBounds GetViewBounds()
+        private Bounds GetViewBounds()
         {
-            var viewBounds = _viewBoundsQuery.GetSingleton<ViewBounds>();
+            var bounds = _viewBoundsQuery.GetSingleton<Bounds>();
             var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            return viewBounds.Translated(translation.Value.xy);
-        }
-
-        private EntityQuery GetSpaceBoundsQuery()
-        {
-            return GetEntityQuery(
-                ComponentType.ReadOnly<SpaceBounds>(),
-                ComponentType.ReadOnly<Translation>()
-            );
-        }
-
-        private SpaceBounds GetSpaceBounds()
-        {
-            var spaceBounds = _spaceBoundsQuery.GetSingleton<SpaceBounds>();
-            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return spaceBounds.Translated(translation.Value.xy);
+            return bounds.Translated(translation.Value.xy);
         }
 
         private EntityQuery GetAsteroidPrefabQuery()
@@ -75,7 +60,6 @@ namespace Asteroids
 
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
             _viewBoundsQuery = GetViewBoundsQuery();
-            _spaceBoundsQuery = GetSpaceBoundsQuery();
             _asteroidDataQuery = GetAsteroidPrefabQuery();
             _asteroidArchetype = GetAsteroidArchetype();
         }
@@ -85,7 +69,6 @@ namespace Asteroids
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
 
             var viewBounds = GetViewBounds();
-            var spaceBounds = GetSpaceBounds();
             var asteroidData = GetAsteroidData();
             var asteroidArchetype = _asteroidArchetype;
 
@@ -175,27 +158,6 @@ namespace Asteroids
                 })
                 .ScheduleParallel();
             
-            Entities
-                .WithAll<Asteroid>()
-                .ForEach((ref Translation translation) =>
-                {
-                    var position = translation.Value;
-                    var spaceBoundsSize = (spaceBounds.max - spaceBounds.min);
-
-                    while (position.x < spaceBounds.min.x)
-                        position.x += spaceBoundsSize.x;
-                    while (position.x > spaceBounds.max.x)
-                        position.x -= spaceBoundsSize.x;
-
-                    while (position.y < spaceBounds.min.y)
-                        position.y += spaceBoundsSize.y;
-                    while (position.y > spaceBounds.max.y)
-                        position.y -= spaceBoundsSize.y;
-
-                    translation.Value = position;
-                })
-                .ScheduleParallel();
-
             _commands.AddJobHandleForProducer(this.Dependency);
         }
     }
