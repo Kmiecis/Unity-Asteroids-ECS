@@ -4,6 +4,7 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
+    [UpdateBefore(typeof(MovementSystem))]
     public partial class SpaceWrapperSystem : SystemBase
     {
         private EntityQuery _spaceBoundsQuery;

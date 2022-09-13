@@ -27,7 +27,7 @@ namespace Asteroids
             return bounds.Translated(translation.Value.xy);
         }
 
-        private EntityQuery GetAsteroidPrefabQuery()
+        private EntityQuery GetAsteroidDataQuery()
         {
             return GetEntityQuery(
                 ComponentType.ReadOnly<AsteroidData>()
@@ -60,7 +60,7 @@ namespace Asteroids
 
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
             _viewBoundsQuery = GetViewBoundsQuery();
-            _asteroidDataQuery = GetAsteroidPrefabQuery();
+            _asteroidDataQuery = GetAsteroidDataQuery();
             _asteroidArchetype = GetAsteroidArchetype();
         }
 
@@ -90,7 +90,8 @@ namespace Asteroids
                     var direction = new MovementDirection { value = request.direction };
                     var speed = new MovementSpeed { value = request.speed };
 
-                    var asteroid = (math.all(viewBounds.min <= request.position) && math.all(request.position <= viewBounds.max)) ?
+                    var visible = math.all(viewBounds.min <= request.position) && math.all(request.position <= viewBounds.max);
+                    var asteroid = visible ?
                         commands.Instantiate(entityInQueryIndex, asteroidData.prefab) :
                         commands.CreateEntity(entityInQueryIndex, asteroidArchetype);
 

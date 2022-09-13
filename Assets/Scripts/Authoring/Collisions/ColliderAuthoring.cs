@@ -9,14 +9,18 @@ namespace Asteroids
         public float radius;
         public float2 offset;
 
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+        public Collider Data
         {
-            var data = new Collider
+            get => new Collider
             {
                 radius = radius,
                 offset = offset
             };
-            dstManager.AddComponentData(entity, data);
+        }
+
+        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+        {
+            dstManager.AddComponentData(entity, Data);
         }
 
 #if UNITY_EDITOR
