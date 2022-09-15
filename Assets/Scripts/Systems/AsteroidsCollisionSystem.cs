@@ -99,12 +99,14 @@ namespace Asteroids
                         if (math.all(spaceBounds.min < viewBounds.min) && math.all(viewBounds.max < spaceBounds.max))
                             while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
                                 position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
+                        var radius = random.NextFloat(asteroidData.minRadius, asteroidData.maxRadius);
                         var direction = random.NextFloat2Direction();
                         var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 
                         var request = new AsteroidRequest
                         {
                             position = position,
+                            radius = radius,
                             direction = direction,
                             speed = speed
                         };

@@ -3,7 +3,7 @@ using Unity.Entities;
 namespace Asteroids
 {
     [GenerateAuthoringComponent]
-    public struct ViewHidden : IComponentData
+    public struct Hidden : IComponentData
     {
     }
 }

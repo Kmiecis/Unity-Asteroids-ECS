@@ -75,12 +75,14 @@ namespace Asteroids
                         for (float x = spaceBounds.min.x; x <= spaceBounds.max.x; x += 1.0f)
                         {
                             var position = new float2(x, y);
+                            var radius = random.NextFloat(asteroidData.minRadius, asteroidData.maxRadius);
                             var direction = random.NextFloat2Direction();
                             var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 
                             var asteroidRequest = new AsteroidRequest
                             {
                                 position = position,
+                                radius = radius,
                                 direction = direction,
                                 speed = speed
                             };

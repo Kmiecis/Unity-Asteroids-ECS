@@ -19,7 +19,7 @@ namespace Asteroids
 
         private void Update()
         {
-            var deltaTime = Time.deltaTime;
+            var deltaTime = Time.smoothDeltaTime;
 
             _frames++;
             _sum += deltaTime;

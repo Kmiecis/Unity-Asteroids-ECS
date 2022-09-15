@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6939886228294068504}
   - component: {fileID: 962655470505791997}
-  - component: {fileID: 5453805595320950799}
+  - component: {fileID: 7682388138583182861}
   m_Layer: 0
   m_Name: AsteroidData
   m_TagString: Untagged
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ConversionMode: 0
---- !u!114 &5453805595320950799
+--- !u!114 &7682388138583182861
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -55,10 +55,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7309460623784554196}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d61405e04ce55bc47ab22067359ca44c, type: 3}
+  m_Script: {fileID: 11500000, guid: 4ec6c1b7c76971c49bc1203050a0e9b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 2821576399426694136, guid: 993d9371710919248936771f9d33e6a9, type: 3}
-  radius: 0.2
+  minRadius: 0.1
+  maxRadius: 0.3
   minSpeed: 0.5
   maxSpeed: 1.5
