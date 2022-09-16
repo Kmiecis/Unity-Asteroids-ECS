@@ -9,54 +9,7 @@ namespace Asteroids
     public partial class AsteroidsCollisionSystem : SystemBase
     {
         private BeginFixedStepSimulationEntityCommandBufferSystem _commands;
-        private EntityQuery _viewBoundsQuery;
-        private EntityQuery _spaceBoundsQuery;
-        private EntityQuery _asteroidDataQuery;
         private EntityArchetype _requestArchetype;
-
-        private EntityQuery GetViewBoundsQuery()
-        {
-            return GetEntityQuery(
-                ComponentType.ReadOnly<ViewBounds>(),
-                ComponentType.ReadOnly<Bounds>(),
-                ComponentType.ReadOnly<Translation>()
-            );
-        }
-
-        private Bounds GetViewBounds()
-        {
-            var bounds = _viewBoundsQuery.GetSingleton<Bounds>();
-            var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            return bounds.Translated(translation.Value.xy);
-        }
-
-        private EntityQuery GetSpaceBoundsQuery()
-        {
-            return GetEntityQuery(
-                ComponentType.ReadOnly<SpaceBounds>(),
-                ComponentType.ReadOnly<Bounds>(),
-                ComponentType.ReadOnly<Translation>()
-            );
-        }
-
-        private Bounds GetSpaceBounds()
-        {
-            var bounds = _spaceBoundsQuery.GetSingleton<Bounds>();
-            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return bounds.Translated(translation.Value.xy);
-        }
-
-        private EntityQuery GetAsteroidDataQuery()
-        {
-            return GetEntityQuery(
-                ComponentType.ReadOnly<AsteroidData>()
-            );
-        }
-
-        private AsteroidData GetAsteroidData()
-        {
-            return _asteroidDataQuery.GetSingleton<AsteroidData>();
-        }
 
         private EntityArchetype GetAsteroidRequestArchetype()
         {
@@ -71,18 +24,12 @@ namespace Asteroids
             base.OnCreate();
 
             _commands = World.GetOrCreateSystem<BeginFixedStepSimulationEntityCommandBufferSystem>();
-            _viewBoundsQuery = GetViewBoundsQuery();
-            _spaceBoundsQuery = GetSpaceBoundsQuery();
-            _asteroidDataQuery = GetAsteroidDataQuery();
             _requestArchetype = GetAsteroidRequestArchetype();
         }
 
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
-            var viewBounds = GetViewBounds();
-            var spaceBounds = GetSpaceBounds();
-            var asteroidData = GetAsteroidData();
             var requestArchetype = _requestArchetype;
 
             Entities
@@ -94,27 +41,8 @@ namespace Asteroids
                         commands.DestroyEntity(entityInQueryIndex, entity);
 
                         var seed = math.max(math.hash(translation.Value), 1);
-                        var random = new Random(seed);
-
-                        var position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
-                        if (math.all(spaceBounds.min < viewBounds.min) && math.all(viewBounds.max < spaceBounds.max))
-                            while (math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max))
-                                position = random.NextFloat2(spaceBounds.min, spaceBounds.max);
-                        var radius = random.NextFloat(asteroidData.minRadius, asteroidData.maxRadius);
-                        var direction = random.NextFloat2Direction();
-                        var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
-
-                        var request = new AsteroidRequest
-                        {
-                            position = position,
-                            radius = radius,
-                            direction = direction,
-                            speed = speed
-                        };
-                        var requestDelay = new RequestDelay
-                        {
-                            value = 1.0f
-                        };
+                        var request = new AsteroidRequest { seed = seed };
+                        var requestDelay = new RequestDelay { value = 1.0f };
 
                         var requestEntity = commands.CreateEntity(entityInQueryIndex, requestArchetype);
                         commands.SetComponent(entityInQueryIndex, requestEntity, request);

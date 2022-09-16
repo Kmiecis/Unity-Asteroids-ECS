@@ -1,5 +1,4 @@
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 
@@ -8,9 +7,25 @@ namespace Asteroids
     public partial class SimulationSystem : SystemBase
     {
         private BeginInitializationEntityCommandBufferSystem _commands;
+        private EntityQuery _viewBoundsQuery;
         private EntityQuery _spaceBoundsQuery;
         private EntityQuery _asteroidDataQuery;
-        private EntityArchetype _requestArchetype;
+
+        private EntityQuery GetViewBoundsQuery()
+        {
+            return GetEntityQuery(
+                ComponentType.ReadOnly<ViewBounds>(),
+                ComponentType.ReadOnly<Bounds>(),
+                ComponentType.ReadOnly<Translation>()
+            );
+        }
+
+        private Bounds GetViewBounds()
+        {
+            var bounds = _viewBoundsQuery.GetSingleton<Bounds>();
+            var translation = _viewBoundsQuery.GetSingleton<Translation>();
+            return bounds.Translated(translation.Value.xy);
+        }
 
         private EntityQuery GetSpaceBoundsQuery()
         {
@@ -40,30 +55,22 @@ namespace Asteroids
             return _asteroidDataQuery.GetSingleton<AsteroidData>();
         }
 
-        private EntityArchetype GetAsteroidRequestArchetype()
-        {
-            return EntityManager.CreateArchetype(
-                typeof(AsteroidRequest),
-                typeof(RequestDelay)
-            );
-        }
-
         protected override void OnCreate()
         {
             base.OnCreate();
 
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _viewBoundsQuery = GetViewBoundsQuery();
             _spaceBoundsQuery = GetSpaceBoundsQuery();
             _asteroidDataQuery = GetAsteroidDataQuery();
-            _requestArchetype = GetAsteroidRequestArchetype();
         }
 
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
+            var viewBounds = GetViewBounds();
             var spaceBounds = GetSpaceBounds();
             var asteroidData = GetAsteroidData();
-            var requestArchetype = _requestArchetype;
 
             Entities
                 .ForEach((int entityInQueryIndex, Entity entity, in SimulateRequest request) =>
@@ -79,16 +86,24 @@ namespace Asteroids
                             var direction = random.NextFloat2Direction();
                             var speed = random.NextFloat(asteroidData.minSpeed, asteroidData.maxSpeed);
 
-                            var asteroidRequest = new AsteroidRequest
-                            {
-                                position = position,
-                                radius = radius,
-                                direction = direction,
-                                speed = speed
-                            };
+                            var translation = new Translation { Value = new float3(position, 0.0f) };
+                            var rotation = new Rotation { Value = quaternion.identity };
+                            var scale = new NonUniformScale { Value = new float3(radius * 2.0f) };
+                            var collider = new Collider { radius = radius };
+                            var movementDirection = new MovementDirection { value = direction };
+                            var movementSpeed = new MovementSpeed { value = speed };
 
-                            var asteroidRequestEntity = commands.CreateEntity(entityInQueryIndex, requestArchetype);
-                            commands.SetComponent(entityInQueryIndex, asteroidRequestEntity, asteroidRequest);
+                            var visible = math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max);
+                            var asteroid = visible ?
+                                commands.Instantiate(entityInQueryIndex, asteroidData.prefab) :
+                                commands.CreateEntity(entityInQueryIndex, asteroidData.archetype);
+
+                            commands.SetComponent(entityInQueryIndex, asteroid, translation);
+                            commands.SetComponent(entityInQueryIndex, asteroid, rotation);
+                            commands.SetComponent(entityInQueryIndex, asteroid, scale);
+                            commands.SetComponent(entityInQueryIndex, asteroid, collider);
+                            commands.SetComponent(entityInQueryIndex, asteroid, movementDirection);
+                            commands.SetComponent(entityInQueryIndex, asteroid, movementSpeed);
                         }
                     }
 

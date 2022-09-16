@@ -1203,7 +1203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data:
-    seed: 2
+    seed: 1
 --- !u!114 &1303905710
 MonoBehaviour:
   m_ObjectHideFlags: 0
