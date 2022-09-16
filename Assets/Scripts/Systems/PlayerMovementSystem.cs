@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Asteroids
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     public partial class PlayerMovementSystem : SystemBase
     {

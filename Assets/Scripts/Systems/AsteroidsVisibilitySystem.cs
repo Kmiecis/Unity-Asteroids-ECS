@@ -125,7 +125,7 @@ namespace Asteroids
         protected override void OnCreate()
         {
             base.OnCreate();
-            Enabled = false;
+
             _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
             _entityQuery = GetEntityQuery();
             _asteroidDataQuery = GetAsteroidDataQuery();

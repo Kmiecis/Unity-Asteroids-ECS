@@ -4,6 +4,7 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     public partial class SpaceWrapperSystem : SystemBase
     {

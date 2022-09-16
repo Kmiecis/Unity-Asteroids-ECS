@@ -4,6 +4,7 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     public partial class MovementSystem : SystemBase
     {
         protected override void OnUpdate()

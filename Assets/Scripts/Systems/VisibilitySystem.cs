@@ -27,7 +27,7 @@ namespace Asteroids
         protected override void OnCreate()
         {
             base.OnCreate();
-            Enabled = false;
+
             _viewBoundsQuery = GetViewBoundsQuery();
         }
 

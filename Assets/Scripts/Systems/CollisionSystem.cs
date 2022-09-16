@@ -6,6 +6,7 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateAfter(typeof(MovementSystem))]
     public partial class CollisionSystem : SystemBase
     {
