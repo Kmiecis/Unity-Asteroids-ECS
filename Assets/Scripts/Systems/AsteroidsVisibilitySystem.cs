@@ -8,7 +8,7 @@ namespace Asteroids
     [UpdateAfter(typeof(VisibilitySystem))]
     public partial class AsteroidsVisibilitySystem : SystemBase
     {
-        private BeginInitializationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
         private EntityQuery _entityQuery;
         private EntityQuery _asteroidDataQuery;
 

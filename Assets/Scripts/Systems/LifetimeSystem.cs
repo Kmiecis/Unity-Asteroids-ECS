@@ -4,7 +4,7 @@ namespace Asteroids
 {
     public partial class LifetimeSystem : SystemBase
     {
-        private BeginInitializationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
 
         protected override void OnCreate()
         {

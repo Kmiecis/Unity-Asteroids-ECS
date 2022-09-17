@@ -6,7 +6,7 @@ namespace Asteroids
 {
     public partial class FiringSystem : SystemBase
     {
-        private BeginInitializationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
 
         protected override void OnCreate()
         {

@@ -6,7 +6,7 @@ namespace Asteroids
 {
     public partial class AsteroidsRequestsSystem : SystemBase
     {
-        private BeginInitializationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
         private EntityQuery _viewBoundsQuery;
         private EntityQuery _spaceBoundsQuery;
         private EntityQuery _asteroidDataQuery;
