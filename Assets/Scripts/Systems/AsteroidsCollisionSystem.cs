@@ -4,11 +4,10 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-    [UpdateAfter(typeof(CollisionSystem))]
+    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
     public partial class AsteroidsCollisionSystem : SystemBase
     {
-        private BeginFixedStepSimulationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
         private EntityArchetype _requestArchetype;
 
         private EntityArchetype GetAsteroidRequestArchetype()
@@ -23,7 +22,7 @@ namespace Asteroids
         {
             base.OnCreate();
 
-            _commands = World.GetOrCreateSystem<BeginFixedStepSimulationEntityCommandBufferSystem>();
+            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
             _requestArchetype = GetAsteroidRequestArchetype();
         }
 

@@ -6,7 +6,7 @@ namespace Asteroids
     [UpdateAfter(typeof(CollisionSystem))]
     public partial class PlayerCollisionSystem : SystemBase
     {
-        private BeginFixedStepSimulationEntityCommandBufferSystem _commands;
+        private EntityCommandBufferSystem _commands;
 
         protected override void OnCreate()
         {
