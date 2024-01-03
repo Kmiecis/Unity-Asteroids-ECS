@@ -6,14 +6,13 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateAfter(typeof(MovementSystem))]
     public partial class CollisionSystem : SystemBase
     {
         private struct QuadrantData
         {
             public Entity entity;
-            public Translation translation;
+            public float3 position;
             public Collider collider;
         }
 
@@ -28,35 +27,39 @@ namespace Asteroids
             return GetEntityQuery(
                 ComponentType.ReadOnly<SpaceBounds>(),
                 ComponentType.ReadOnly<Bounds>(),
-                ComponentType.ReadOnly<Translation>()
+                ComponentType.ReadOnly<LocalTransform>()
             );
         }
 
-        private Bounds GetSpaceBounds()
+        private bool TryGetSpaceBounds(out Bounds bounds)
         {
-            var bounds = _spaceBoundsQuery.GetSingleton<Bounds>();
-            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return bounds.Translated(translation.Value.xy);
+            if (_spaceBoundsQuery.TryGetSingleton<Bounds>(out bounds) &&
+                _spaceBoundsQuery.TryGetSingletonSafely<LocalTransform>(out var transform))
+            {
+                bounds = bounds.Translated(transform.Position.xy);
+                return true;
+            }
+            return false;
         }
 
         private EntityQuery GetCollidersQuery()
         {
             return GetEntityQuery(
-                ComponentType.ReadOnly<Translation>(),
+                ComponentType.ReadOnly<LocalTransform>(),
                 ComponentType.ReadOnly<Collider>()
             );
         }
 
-        private NativeArray<int2> GetOffsets(Allocator allocator)
+        private NativeArray<int2> CreateOffsets(Allocator allocator)
         {
             var result = new NativeArray<int2>(8, allocator);
-            result[0] = new int2(-1, 0);
-            result[1] = new int2(-1, 1);
-            result[2] = new int2(0, 1);
-            result[3] = new int2(1, 1);
-            result[4] = new int2(1, 0);
-            result[5] = new int2(1, -1);
-            result[6] = new int2(0, -1);
+            result[0] = new int2(-1,  0);
+            result[1] = new int2(-1,  1);
+            result[2] = new int2( 0,  1);
+            result[3] = new int2( 1,  1);
+            result[4] = new int2( 1,  0);
+            result[5] = new int2( 1, -1);
+            result[6] = new int2( 0, -1);
             result[7] = new int2(-1, -1);
             return result;
         }
@@ -77,14 +80,17 @@ namespace Asteroids
 
             _spaceBoundsQuery = GetSpaceBoundsQuery();
             _collidersQuery = GetCollidersQuery();
-            _offsets = GetOffsets(Allocator.Persistent);
+            _offsets = CreateOffsets(Allocator.Persistent);
         }
 
         protected override void OnUpdate()
         {
-            var count = _collidersQuery.CalculateEntityCount();
+            if (!TryGetSpaceBounds(out var spaceBounds))
+            {
+                return;
+            }
 
-            var spaceBounds = GetSpaceBounds();
+            var count = _collidersQuery.CalculateEntityCount();
             var spaceSize = spaceBounds.Size;
 
             var quadrantMap = new NativeParallelMultiHashMap<int, QuadrantData>(count * 9, Allocator.TempJob);
@@ -94,16 +100,16 @@ namespace Asteroids
 
             Entities
                 .WithReadOnly(offsets)
-                .ForEach((int entityInQueryIndex, Entity entity, in Translation translation, in Collider collider) =>
+                .ForEach((int entityInQueryIndex, Entity entity, in LocalTransform transform, in Collider collider) =>
                 {
                     var quadrantData = new QuadrantData
                     {
                         entity = entity,
-                        translation = translation,
+                        position = transform.Position,
                         collider = collider
                     };
 
-                    var position = translation.Value.xy;
+                    var position = transform.Position.xy;
                     int quadrantKey = GetQuadrantKey(position, (int)spaceSize.y);
                     quadrantMapWriter.Add(quadrantKey, quadrantData);
 
@@ -118,9 +124,9 @@ namespace Asteroids
 
             Entities
                 .WithReadOnly(quadrantMap)
-                .ForEach((int entityInQueryIndex, Entity entity, ref Collided collided, in Translation translation, in Collider collider) =>
+                .ForEach((int entityInQueryIndex, Entity entity, ref Collided collided, in LocalTransform transform, in Collider collider) =>
                 {
-                    var position = translation.Value.xy + collider.offset;
+                    var position = transform.Position.xy + collider.offset;
                     var quadrantKey = GetQuadrantKey(position, (int)spaceSize.y);
 
                     if (quadrantMap.TryGetFirstValue(quadrantKey, out var data, out var iterator))
@@ -128,13 +134,13 @@ namespace Asteroids
                         do
                         {
                             var otherEntity = data.entity;
-                            var otherTranslation = data.translation;
+                            var otherTranslation = data.position;
                             var otherCollider = data.collider;
 
                             if (entity == otherEntity)
                                 continue;
 
-                            var otherPosition = otherTranslation.Value.xy + otherCollider.offset;
+                            var otherPosition = otherTranslation.xy + otherCollider.offset;
 
                             var dt = otherPosition - position;
                             var sr = otherCollider.radius + collider.radius;

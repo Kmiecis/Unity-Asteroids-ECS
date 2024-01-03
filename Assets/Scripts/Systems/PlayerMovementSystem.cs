@@ -5,13 +5,12 @@ using UnityEngine;
 
 namespace Asteroids
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     public partial class PlayerMovementSystem : SystemBase
     {
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             var accelerate = Input.GetKey(KeyCode.W);
 

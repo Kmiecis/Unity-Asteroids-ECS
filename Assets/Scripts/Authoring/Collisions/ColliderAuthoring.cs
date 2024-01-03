@@ -4,23 +4,18 @@ using UnityEngine;
 
 namespace Asteroids
 {
-    public class ColliderAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+    public class ColliderAuthoring : MonoBehaviour
     {
         public float radius;
         public float2 offset;
 
-        public Collider Data
+        public Collider AsComponent
         {
             get => new Collider
             {
                 radius = radius,
                 offset = offset
             };
-        }
-
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
-        {
-            dstManager.AddComponentData(entity, Data);
         }
 
 #if UNITY_EDITOR
@@ -31,5 +26,20 @@ namespace Asteroids
             Gizmos.DrawWireSphere(position, radius);
         }
 #endif
+    }
+
+    public struct Collider : IComponentData
+    {
+        public float radius;
+        public float2 offset;
+    }
+
+    public class ColliderBaker : Baker<ColliderAuthoring>
+    {
+        public override void Bake(ColliderAuthoring authoring)
+        {
+            var target = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent(target, authoring.AsComponent);
+        }
     }
 }

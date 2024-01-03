@@ -21,8 +21,8 @@ namespace Asteroids
         {
             if (entityInstance.TryGetEntity(out var entity))
             {
-                var translation = _manager.GetComponentData<Translation>(entity);
-                transform.position = translation.Value + offset;
+                var transform = _manager.GetComponentData<LocalTransform>(entity);
+                this.transform.position = transform.Position + offset;
             }
         }
     }

@@ -10,13 +10,13 @@ namespace Asteroids
 
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             Entities
-                .ForEach((ref Rotation rotation, in RotateSpeed speed, in LocalToWorld transform) =>
+                .ForEach((ref LocalTransform transform, in RotateSpeed speed) =>
                 {
                     var angle = deltaTime * math.radians(speed.value);
-                    rotation.Value = math.mul(rotation.Value, quaternion.AxisAngle(kRotationAxis, angle));
+                    transform.Rotation = math.mul(transform.Rotation, quaternion.AxisAngle(kRotationAxis, angle));
                 })
                 .ScheduleParallel();
         }

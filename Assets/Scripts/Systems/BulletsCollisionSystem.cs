@@ -3,7 +3,6 @@ using Unity.Entities;
 
 namespace Asteroids
 {
-    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
     public partial class BulletsCollisionSystem : SystemBase
     {
         private EntityCommandBufferSystem _commands;
@@ -12,7 +11,7 @@ namespace Asteroids
         {
             base.OnCreate();
 
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _commands = World.GetOrCreateSystemManaged<BeginInitializationEntityCommandBufferSystem>();
         }
 
         protected override void OnUpdate()

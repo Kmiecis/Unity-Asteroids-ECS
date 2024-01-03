@@ -1,5 +1,6 @@
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Asteroids
 {
@@ -10,7 +11,7 @@ namespace Asteroids
 
         private float _maximumDeltaTime;
 
-        private void Start()
+        private void Awake()
         {
             _world = World.DefaultGameObjectInjectionWorld;
             _entityManager = _world.EntityManager;
@@ -33,6 +34,14 @@ namespace Asteroids
             Unpause();
 
             _entityManager.DestroyEntity(_entityManager.UniversalQuery);
+        }
+
+        public void Reload()
+        {
+            Teardown();
+
+            var scene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(scene.buildIndex);
         }
     }
 }

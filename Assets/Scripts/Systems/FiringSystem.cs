@@ -11,16 +11,17 @@ namespace Asteroids
         protected override void OnCreate()
         {
             base.OnCreate();
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+
+            _commands = World.GetOrCreateSystemManaged<BeginInitializationEntityCommandBufferSystem>();
         }
 
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             Entities
-                .ForEach((int entityInQueryIndex, ref FiringCooldown cooldown, in FiringInterval interval, in FiringSpawner spawner, in LocalToWorld transform) =>
+                .ForEach((int entityInQueryIndex, ref FiringCooldown cooldown, in FiringInterval interval, in FiringSpawner spawner, in LocalToWorld toWorld) =>
                 {
                     cooldown.value -= deltaTime;
 
@@ -28,10 +29,15 @@ namespace Asteroids
                     {
                         var projectile = commands.Instantiate(entityInQueryIndex, spawner.prefab);
 
-                        var projectileTranslation = new Translation { Value = math.transform(transform.Value, new float3(spawner.offset, 0.0f)) };
-                        var projectileDirection = new MovementDirection { value = transform.Up.xy };
+                        var projectileTransform = new LocalTransform
+                        {
+                            Position = math.transform(toWorld.Value, new float3(spawner.offset, 0.0f)),
+                            Rotation = quaternion.identity,
+                            Scale = spawner.radius * 2.0f
+                        };
+                        var projectileDirection = new MovementDirection { value = toWorld.Up.xy };
 
-                        commands.SetComponent(entityInQueryIndex, projectile, projectileTranslation);
+                        commands.SetComponent(entityInQueryIndex, projectile, projectileTransform);
                         commands.SetComponent(entityInQueryIndex, projectile, projectileDirection);
 
                         cooldown.value = interval.value;

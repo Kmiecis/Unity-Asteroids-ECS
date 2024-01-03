@@ -4,7 +4,6 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
-    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
     public partial class AsteroidsCollisionSystem : SystemBase
     {
         private EntityCommandBufferSystem _commands;
@@ -22,7 +21,7 @@ namespace Asteroids
         {
             base.OnCreate();
 
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _commands = World.GetOrCreateSystemManaged<BeginInitializationEntityCommandBufferSystem>();
             _requestArchetype = GetAsteroidRequestArchetype();
         }
 
@@ -30,16 +29,16 @@ namespace Asteroids
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
             var requestArchetype = _requestArchetype;
-
+            
             Entities
                 .WithAll<Asteroid>()
-                .ForEach((int entityInQueryIndex, Entity entity, in Translation translation, in Collided collided) =>
+                .ForEach((int entityInQueryIndex, Entity entity, in LocalTransform transform, in Collided collided) =>
                 {
                     if (collided.value)
                     {
                         commands.DestroyEntity(entityInQueryIndex, entity);
 
-                        var seed = math.max(math.hash(translation.Value), 1);
+                        var seed = math.max(math.hash(transform.Position), 1);
                         var request = new AsteroidRequest { seed = seed };
                         var requestDelay = new RequestDelay { value = 1.0f };
 

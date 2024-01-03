@@ -2,7 +2,6 @@ using Unity.Entities;
 
 namespace Asteroids
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateAfter(typeof(CollisionSystem))]
     public partial class PlayerCollisionSystem : SystemBase
     {
@@ -12,7 +11,7 @@ namespace Asteroids
         {
             base.OnCreate();
 
-            _commands = World.GetOrCreateSystem<BeginFixedStepSimulationEntityCommandBufferSystem>();
+            _commands = World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
         }
 
         protected override void OnUpdate()

@@ -13,15 +13,19 @@ namespace Asteroids
             return GetEntityQuery(
                 ComponentType.ReadOnly<ViewBounds>(),
                 ComponentType.ReadOnly<Bounds>(),
-                ComponentType.ReadOnly<Translation>()
+                ComponentType.ReadOnly<LocalTransform>()
             );
         }
 
-        private Bounds GetViewBounds()
+        private bool TryGetViewBounds(out Bounds bounds)
         {
-            var bounds = _viewBoundsQuery.GetSingleton<Bounds>();
-            var translation = _viewBoundsQuery.GetSingleton<Translation>();
-            return bounds.Translated(translation.Value.xy);
+            if (_viewBoundsQuery.TryGetSingleton<Bounds>(out bounds) &&
+                _viewBoundsQuery.TryGetSingletonSafely<LocalTransform>(out var transform))
+            {
+                bounds = bounds.Translated(transform.Position.xy);
+                return true;
+            }
+            return false;
         }
 
         protected override void OnCreate()
@@ -33,14 +37,20 @@ namespace Asteroids
 
         protected override void OnUpdate()
         {
-            var viewBounds = GetViewBounds();
+            if (!TryGetViewBounds(out var viewBounds))
+            {
+                return;
+            }
 
             Entities
-                .ForEach((ref Visibility visibility, in Translation translation) =>
+                .ForEach((ref Visibility visibility, in LocalTransform transform) =>
                 {
-                    var position = translation.Value.xy;
+                    var position = transform.Position.xy;
 
-                    visibility.value = math.all(viewBounds.min <= position) && math.all(position <= viewBounds.max);
+                    visibility.value = (
+                        math.all(viewBounds.min <= position) &&
+                        math.all(position <= viewBounds.max)
+                    );
                 })
                 .ScheduleParallel();
         }

@@ -4,7 +4,6 @@ using Unity.Transforms;
 
 namespace Asteroids
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     public partial class SpaceWrapperSystem : SystemBase
     {
@@ -15,15 +14,19 @@ namespace Asteroids
             return GetEntityQuery(
                 ComponentType.ReadOnly<SpaceBounds>(),
                 ComponentType.ReadOnly<Bounds>(),
-                ComponentType.ReadOnly<Translation>()
+                ComponentType.ReadOnly<LocalTransform>()
             );
         }
 
-        private Bounds GetSpaceBounds()
+        private bool TryGetSpaceBounds(out Bounds bounds)
         {
-            var bounds = _spaceBoundsQuery.GetSingleton<Bounds>();
-            var translation = _spaceBoundsQuery.GetSingleton<Translation>();
-            return bounds.Translated(translation.Value.xy);
+            if (_spaceBoundsQuery.TryGetSingleton<Bounds>(out bounds) &&
+                _spaceBoundsQuery.TryGetSingletonSafely<LocalTransform>(out var transform))
+            {
+                bounds = bounds.Translated(transform.Position.xy);
+                return true;
+            }
+            return false;
         }
 
         protected override void OnCreate()
@@ -35,12 +38,15 @@ namespace Asteroids
 
         protected override void OnUpdate()
         {
-            var spaceBounds = GetSpaceBounds();
+            if (!TryGetSpaceBounds(out var spaceBounds))
+            {
+                return;
+            }
 
             Entities
-                .ForEach((ref Translation translation) =>
+                .ForEach((ref LocalTransform transform) =>
                 {
-                    var position = translation.Value.xy;
+                    var position = transform.Position.xy;
                     var spaceBoundsSize = spaceBounds.Size;
 
                     while (position.x < spaceBounds.min.x)
@@ -53,7 +59,7 @@ namespace Asteroids
                     while (position.y > spaceBounds.max.y)
                         position.y -= spaceBoundsSize.y;
 
-                    translation.Value = new float3(position, 0.0f);
+                    transform.Position = new float3(position, 0.0f);
                 })
                 .ScheduleParallel();
         }

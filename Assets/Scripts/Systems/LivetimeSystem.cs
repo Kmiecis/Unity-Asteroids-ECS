@@ -6,7 +6,7 @@ namespace Asteroids
     {
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             Entities
                 .ForEach((ref Livetime livetime) =>

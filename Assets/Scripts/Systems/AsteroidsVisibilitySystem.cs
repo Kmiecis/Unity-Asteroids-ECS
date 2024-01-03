@@ -1,6 +1,8 @@
 ﻿using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Transforms;
 
 namespace Asteroids
@@ -11,9 +13,10 @@ namespace Asteroids
         private EntityCommandBufferSystem _commands;
         private EntityQuery _entityQuery;
         private EntityQuery _asteroidDataQuery;
+        private EntityArchetype _asteroidArchetype;
 
         [BurstCompile]
-        private struct VisibilityJob : IJobEntityBatchWithIndex
+        private struct VisibilityJob : IJobChunk
         {
             [ReadOnly]
             public EntityTypeHandle entityType;
@@ -24,11 +27,7 @@ namespace Asteroids
             [ReadOnly]
             public ComponentTypeHandle<Visibility> visibilityType;
             [ReadOnly]
-            public ComponentTypeHandle<Translation> translationType;
-            [ReadOnly]
-            public ComponentTypeHandle<Rotation> rotationType;
-            [ReadOnly]
-            public ComponentTypeHandle<NonUniformScale> scaleType;
+            public ComponentTypeHandle<LocalTransform> transformType;
             [ReadOnly]
             public ComponentTypeHandle<Collider> colliderType;
             [ReadOnly]
@@ -37,59 +36,53 @@ namespace Asteroids
             public ComponentTypeHandle<MovementSpeed> speedType;
             [ReadOnly]
             public AsteroidData asteroidData;
+            [ReadOnly]
+            public EntityArchetype asteroidArchetype;
 
             public EntityCommandBuffer.ParallelWriter commands;
 
-            public void Execute(ArchetypeChunk batchInChunk, int batchIndex, int indexOfFirstEntityInQuery)
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var entities = batchInChunk.GetNativeArray(entityType);
-                var visibilities = batchInChunk.GetNativeArray(visibilityType);
-                var translations = batchInChunk.GetNativeArray(translationType);
-                var rotations = batchInChunk.GetNativeArray(rotationType);
-                var scales = batchInChunk.GetNativeArray(scaleType);
-                var colliders = batchInChunk.GetNativeArray(colliderType);
-                var directions = batchInChunk.GetNativeArray(directionType);
-                var speeds = batchInChunk.GetNativeArray(speedType);
+                var entities = chunk.GetNativeArray(entityType);
+                var visibilities = chunk.GetNativeArray(ref visibilityType);
+                var transforms = chunk.GetNativeArray(ref transformType);
+                var colliders = chunk.GetNativeArray(ref colliderType);
+                var directions = chunk.GetNativeArray(ref directionType);
+                var speeds = chunk.GetNativeArray(ref speedType);
 
-                if (batchInChunk.Has(visibleType))
+                if (chunk.Has(ref visibleType))
                 {
-                    for (int i = 0; i < batchInChunk.Count; ++i)
+                    for (int i = 0; i < chunk.Count; ++i)
                     {
                         var visibility = visibilities[i];
 
                         if (!visibility.value)
                         {
-                            int entityInQueryIndex = i + indexOfFirstEntityInQuery;
-                            commands.DestroyEntity(entityInQueryIndex, entities[i]);
+                            commands.DestroyEntity(unfilteredChunkIndex, entities[i]);
 
-                            var asteroid = commands.CreateEntity(i, asteroidData.archetype);
-                            commands.SetComponent(entityInQueryIndex, asteroid, translations[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, rotations[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, scales[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, colliders[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, directions[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, speeds[i]);
+                            var asteroid = commands.CreateEntity(unfilteredChunkIndex, asteroidArchetype);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, transforms[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, colliders[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, directions[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, speeds[i]);
                         }
                     }
                 }
-                else if (batchInChunk.Has(hiddenType))
+                else if (chunk.Has(ref hiddenType))
                 {
-                    for (int i = 0; i < batchInChunk.Count; ++i)
+                    for (int i = 0; i < chunk.Count; ++i)
                     {
                         var visibility = visibilities[i];
 
                         if (visibility.value)
                         {
-                            int entityInQueryIndex = i + indexOfFirstEntityInQuery;
-                            commands.DestroyEntity(entityInQueryIndex, entities[i]);
+                            commands.DestroyEntity(unfilteredChunkIndex, entities[i]);
 
-                            var asteroid = commands.Instantiate(i, asteroidData.prefab);
-                            commands.SetComponent(entityInQueryIndex, asteroid, translations[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, rotations[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, scales[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, colliders[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, directions[i]);
-                            commands.SetComponent(entityInQueryIndex, asteroid, speeds[i]);
+                            var asteroid = commands.Instantiate(unfilteredChunkIndex, asteroidData.prefab);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, transforms[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, colliders[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, directions[i]);
+                            commands.SetComponent(unfilteredChunkIndex, asteroid, speeds[i]);
                         }
                     }
                 }
@@ -101,9 +94,7 @@ namespace Asteroids
             return GetEntityQuery(
                 ComponentType.ReadOnly<Asteroid>(),
                 ComponentType.ReadOnly<Visibility>(),
-                ComponentType.ReadOnly<Translation>(),
-                ComponentType.ReadOnly<Rotation>(),
-                ComponentType.ReadOnly<NonUniformScale>(),
+                ComponentType.ReadOnly<LocalTransform>(),
                 ComponentType.ReadOnly<Collider>(),
                 ComponentType.ReadOnly<MovementDirection>(),
                 ComponentType.ReadOnly<MovementSpeed>()
@@ -117,24 +108,30 @@ namespace Asteroids
             );
         }
 
-        private AsteroidData GetAsteroidData()
+        private bool TryGetAsteroidData(out AsteroidData data)
         {
-            return _asteroidDataQuery.GetSingleton<AsteroidData>();
+            return _asteroidDataQuery.TryGetSingleton<AsteroidData>(out data);
         }
 
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+            _commands = World.GetOrCreateSystemManaged<BeginInitializationEntityCommandBufferSystem>();
             _entityQuery = GetEntityQuery();
             _asteroidDataQuery = GetAsteroidDataQuery();
+            _asteroidArchetype = AsteroidData.CreateAsteroidArchetype(EntityManager);
         }
 
         protected override void OnUpdate()
         {
+            if (!TryGetAsteroidData(out var asteroidData))
+            {
+                return;
+            }
+
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
-            var asteroidData = GetAsteroidData();
+            var asteroidArchetype = _asteroidArchetype;
 
             var job = new VisibilityJob
             {
@@ -142,13 +139,12 @@ namespace Asteroids
                 visibleType = GetComponentTypeHandle<Visible>(),
                 hiddenType = GetComponentTypeHandle<Hidden>(),
                 visibilityType = GetComponentTypeHandle<Visibility>(),
-                translationType = GetComponentTypeHandle<Translation>(),
-                rotationType = GetComponentTypeHandle<Rotation>(),
-                scaleType = GetComponentTypeHandle<NonUniformScale>(),
+                transformType = GetComponentTypeHandle<LocalTransform>(),
                 colliderType = GetComponentTypeHandle<Collider>(),
                 directionType = GetComponentTypeHandle<MovementDirection>(),
                 speedType = GetComponentTypeHandle<MovementSpeed>(),
                 asteroidData = asteroidData,
+                asteroidArchetype = asteroidArchetype,
                 commands = commands
             };
             this.Dependency = job.ScheduleParallel(_entityQuery, this.Dependency);

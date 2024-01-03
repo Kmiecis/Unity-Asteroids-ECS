@@ -9,7 +9,7 @@ namespace Asteroids
     {
         protected override void OnUpdate()
         {
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             var turnLeft = Input.GetKey(KeyCode.A);
             var turnRight = Input.GetKey(KeyCode.D);

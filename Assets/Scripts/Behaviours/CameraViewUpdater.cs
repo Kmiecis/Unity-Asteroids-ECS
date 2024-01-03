@@ -5,7 +5,7 @@ namespace Asteroids
 {
     public class CameraViewUpdater : MonoBehaviour
     {
-        public EntityInstance viewBoundsInstance;
+        public EntityInstance entityInstance;
         public float offset = 1.0f;
 
         [SerializeField]
@@ -44,7 +44,7 @@ namespace Asteroids
                 max = Max + offset
             };
 
-            viewBoundsInstance.TrySetData(bounds);
+            entityInstance.TrySetData(bounds);
         }
     }
 }

@@ -9,14 +9,15 @@ namespace Asteroids
         protected override void OnCreate()
         {
             base.OnCreate();
-            _commands = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
+
+            _commands = World.GetOrCreateSystemManaged<BeginInitializationEntityCommandBufferSystem>();
         }
 
         protected override void OnUpdate()
         {
             var commands = _commands.CreateCommandBuffer().AsParallelWriter();
 
-            var deltaTime = Time.DeltaTime;
+            var deltaTime = World.Time.DeltaTime;
 
             Entities
                 .ForEach((int entityInQueryIndex, Entity entity, ref Lifetime lifetime) =>
